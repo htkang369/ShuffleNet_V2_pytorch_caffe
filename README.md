@@ -28,4 +28,6 @@ python shufflenet2.py --save_caffe net --num_classes 1000 --model_width 1.0
 
 Converting Model from PyTorch to Caffe.
 ---------------------------------------
+```
 python shufflenet2.py --load_pytorch net.pth --save_caffe net --num_classes 1000 --model_width 1.0
+```
