@@ -85,7 +85,7 @@ class Network(nn.Module):
         self.num_classes = num_classes
         in_channels = 24
         width_config = {
-            # 0.25: (24, 48, 96, 1024),
+            0.25: (24, 48, 96, 512),
             0.5: (48, 96, 192, 1024),
             1.0: (116, 232, 464, 1024),
             1.5: (176, 352, 704, 1024),
