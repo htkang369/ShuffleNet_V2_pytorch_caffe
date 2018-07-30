@@ -26,29 +26,29 @@ class BasicBlock(nn.Module):
         self.g_name = name
         self.in_channels = in_channels
         self.stride = stride
+        channels = out_channels//2
         if stride == 1:
-            channels = in_channels//2
+            assert in_channels == out_channels
             self.conv = nn.Sequential(
                 slim.conv_bn_relu(name + '/conv1', channels, channels, 1),
                 slim.conv_bn(name + '/conv2', 
                     channels, channels, 3, stride=stride, 
                     dilation=dilation, padding=dilation, groups=channels),
-                slim.conv_bn_relu(name + '/conv3', channels, out_channels - channels, 1),
+                slim.conv_bn_relu(name + '/conv3', channels, channels, 1),
             )
         else:
-            channels = in_channels
-            self.conv0 = nn.Sequential(
-                slim.conv_bn(name + '/conv4', 
-                    channels, channels, 3, stride=stride, 
-                    dilation=dilation, padding=dilation, groups=channels),
-                slim.conv_bn_relu(name + '/conv5', channels, out_channels//2, 1),
-            )
             self.conv = nn.Sequential(
-                slim.conv_bn_relu(name + '/conv1', channels, channels, 1),
+                slim.conv_bn_relu(name + '/conv1', in_channels, channels, 1),
                 slim.conv_bn(name + '/conv2', 
                     channels, channels, 3, stride=stride, 
                     dilation=dilation, padding=dilation, groups=channels),
-                slim.conv_bn_relu(name + '/conv3', channels, out_channels//2, 1),
+                slim.conv_bn_relu(name + '/conv3', channels, channels, 1),
+            )
+            self.conv0 = nn.Sequential(
+                slim.conv_bn(name + '/conv4', 
+                    in_channels, in_channels, 3, stride=stride, 
+                    dilation=dilation, padding=dilation, groups=in_channels),
+                slim.conv_bn_relu(name + '/conv5', in_channels, channels, 1),
             )
         self.shuffle = slim.channel_shuffle(name + '/shuffle', 2)
 
@@ -56,8 +56,7 @@ class BasicBlock(nn.Module):
         if self.stride == 1:
             x1 = x[:, :(x.shape[1]//2), :, :]
             x2 = x[:, (x.shape[1]//2):, :, :]
-            x2 = self.conv(x2)
-            x = torch.cat((x1, x2), 1)
+            x = torch.cat((x1, self.conv(x2)), 1)
         else:
             x = torch.cat((self.conv0(x), self.conv(x)), 1)
         return self.shuffle(x)
